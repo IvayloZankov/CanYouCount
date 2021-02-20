@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Can You Count</string>
+    <string name="start">START</string>
+    <string name="number">0</string>
+    <string name="separator">/</string>
+    <string name="operation">+</string>
+    <string name="level">level</string>
+    <string name="score">score</string>
+    <string name="time">time</string>
+    <string name="correct">CORRECT</string>
+    <string name="wrong">WRONG</string>
+    <string name="time_out">TIME OUT!</string>
+</resources>
