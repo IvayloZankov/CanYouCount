@@ -1,4 +1,4 @@
-package com.example.canyoucount;
+package com.fosents.canyoucount;
 
 import org.junit.Test;
 

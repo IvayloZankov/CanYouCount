@@ -11,12 +11,13 @@
     <color name="dark_green">#2E9A00</color>
     <color name="pink">#FB70FF</color>
     <color name="red">#FF0000</color>
+    <color name="red_dark">#A30000</color>
     <color name="light_red">#FF7777</color>
     <color name="black">#FF000000</color>
     <color name="grey">#1C1C1C</color>
     <color name="light_grey">#3A3A3A</color>
     <color name="very_light_grey">#9E9E9E</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="white">#E7FFFFFF</color>
     <color name="blue">#2933FF</color>
     <color name="light_blue">#87A1FF</color>
     <color name="beige">#E1C699</color>

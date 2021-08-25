@@ -1,13 +1,28 @@
 <resources>
     <string name="app_name">Can You Count</string>
+    <string name="app_author">by Zani</string>
+
+    <string name="preferences_difficulty" translatable="false">difficulty</string>
+    <string name="preferences_level" translatable="false">level</string>
+    <string name="preferences_username" translatable="false">username</string>
+
     <string name="start">START</string>
+    <string name="try_again">TRY AGAIN</string>
     <string name="number">0</string>
-    <string name="separator">/</string>
+    <string name="separator">|</string>
     <string name="operation">+</string>
     <string name="level">level</string>
     <string name="score">score</string>
     <string name="time">time</string>
+    <string name="image_view_settings">Settings icon</string>
+    <string name="image_view_refresh">Refresh icon</string>
+    <string name="settings_difficulty_select">Difficulty</string>
+    <string name="settings_radio_easy">Easy</string>
+    <string name="settings_radio_medium">Medium</string>
+    <string name="settings_radio_hard">Hard</string>
+    <string name="settings_background_descr">Setting background</string>
     <string name="correct">CORRECT</string>
     <string name="wrong">WRONG</string>
     <string name="time_out">TIME OUT!</string>
+    <string name="wrong_attempts">TOO MANY WRONG ATTEMPTS!</string>
 </resources>

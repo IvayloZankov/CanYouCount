@@ -1,4 +1,4 @@
-package com.example.canyoucount;
+package com.fosents.canyoucount;
 
 class MyBounceInterpolator implements android.view.animation.Interpolator {
     private final double mAmplitude;

@@ -1,4 +1,4 @@
-package com.example.canyoucount;
+package com.fosents.canyoucount;
 
 public enum Difficult {
     EASY,
