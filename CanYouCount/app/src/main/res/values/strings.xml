@@ -3,8 +3,11 @@
     <string name="app_author">by Zani</string>
 
     <string name="preferences_difficulty" translatable="false">difficulty</string>
+    <string name="preferences_difficulty_default" translatable="false">default difficulty</string>
     <string name="preferences_level" translatable="false">level</string>
     <string name="preferences_username" translatable="false">username</string>
+    <string name="preferences_username_default" translatable="false">default username</string>
+    <string name="preferences_score" translatable="false">score</string>
 
     <string name="start">START</string>
     <string name="try_again">TRY AGAIN</string>
@@ -13,16 +16,26 @@
     <string name="operation">+</string>
     <string name="level">level</string>
     <string name="score">score</string>
+    <string name="answers">answers</string>
     <string name="time">time</string>
+    <string name="user">user</string>
+    <string name="counter">counter%1$s</string>
     <string name="image_view_settings">Settings icon</string>
     <string name="image_view_refresh">Refresh icon</string>
+    <string name="image_view_edit_username">Edit username</string>
+    <string name="settings_username">Username</string>
     <string name="settings_difficulty_select">Difficulty</string>
     <string name="settings_radio_easy">Easy</string>
     <string name="settings_radio_medium">Medium</string>
     <string name="settings_radio_hard">Hard</string>
+    <string name="settings_reset_game">Reset Game</string>
     <string name="settings_background_descr">Setting background</string>
     <string name="correct">CORRECT</string>
     <string name="wrong">WRONG</string>
     <string name="time_out">TIME OUT!</string>
     <string name="wrong_attempts">TOO MANY WRONG ATTEMPTS!</string>
+    <string name="alert_reset_game_title">Reset score and level?</string>
+    <string name="alert_reset_game_text">Are you sure?</string>
+    <string name="alert_reset_game_positive">Yes</string>
+    <string name="alert_reset_game_cancel">Cancel</string>
 </resources>

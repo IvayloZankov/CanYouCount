@@ -13,4 +13,11 @@
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorOnPrimary</item>
         <!-- Customize your theme here. -->
     </style>
+
+    <style name="MyEditTextTheme">
+        <item name="colorControlNormal">@color/very_light_grey</item>
+        <item name="colorControlActivated">@color/very_light_grey</item>
+        <item name="colorControlHighlight">@color/very_light_grey</item>
+    </style>
+
 </resources>

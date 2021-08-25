@@ -1,5 +1,8 @@
 package com.fosents.canyoucount;
 
+import android.app.AlertDialog;
+import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
@@ -11,19 +14,26 @@ import androidx.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 
 public class SettingsFragment extends Fragment {
 
     public static final String TAG = SettingsFragment.class.getSimpleName();
 
-    ImageView imageViewBackground;
-    RadioGroup radioGroupDifficulty;
-    RadioButton radioButtonEasy, radioButtonMedium, radioButtonHard;
-    ActionListener mListener;
-    String currentDifficulty;
+    private ImageView imageViewBackground, imageViewCloseSettings;
+    private RadioGroup radioGroupDifficulty;
+    private RadioButton radioButtonEasy, radioButtonMedium, radioButtonHard;
+    private ActionListener mListener;
+    private String currentDifficulty;
+    private EditText editTextUsername;
+    private SharedPreferences prefs;
+    private String username;
+    private TextView textViewReset;
 
 //    private static final String ARG_PARAM1 = "param1";
 //    private static final String ARG_PARAM2 = "param2";
@@ -67,9 +77,33 @@ public class SettingsFragment extends Fragment {
         radioButtonEasy = view.findViewById(R.id.radioButtonEasy);
         radioButtonMedium = view.findViewById(R.id.radioButtonMedium);
         radioButtonHard = view.findViewById(R.id.radioButtonHard);
+        imageViewCloseSettings = view.findViewById(R.id.imageViewCloseSettings);
+        editTextUsername = view.findViewById(R.id.editTextUsername);
+        textViewReset = view.findViewById(R.id.textViewReset);
+
+        prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+
         imageViewBackground.setOnClickListener(v -> {});
-        currentDifficulty = PreferenceManager.getDefaultSharedPreferences(getContext())
-                .getString(getString(R.string.settings_difficulty_select), getString(R.string.settings_radio_easy));
+        username = prefs.getString(getString(R.string.preferences_username), getString(R.string.preferences_username_default));
+        editTextUsername.setText(username);
+        editTextUsername.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                playSound(R.raw.click_settings);
+                editTextUsername.clearFocus();
+            }
+            return false;
+        });
+        editTextUsername.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                String usernameNew = editTextUsername.getText().toString();
+                if (!usernameNew.equals("")) {
+                    username = usernameNew;
+                    prefs.edit().putString(getString(R.string.preferences_username), username).apply();
+                    mListener.onChangeUsername(username);
+                } else editTextUsername.setText(username);
+            }
+        });
+        currentDifficulty = prefs.getString(getString(R.string.preferences_difficulty), getString(R.string.settings_radio_easy));
         if (currentDifficulty.equals(getString(R.string.settings_radio_hard))) {
             radioButtonHard.setChecked(true);
         } else if (currentDifficulty.equals(getString(R.string.settings_radio_medium))) {
@@ -81,6 +115,7 @@ public class SettingsFragment extends Fragment {
         radioGroupDifficulty.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
+                playSound(R.raw.click_settings);
                 String newDiff;
                 if (checkedId == R.id.radioButtonEasy) {
                     newDiff = getString(R.string.settings_radio_easy);
@@ -90,12 +125,29 @@ public class SettingsFragment extends Fragment {
                     newDiff = getString(R.string.settings_radio_hard);
                 }
                 PreferenceManager.getDefaultSharedPreferences(getContext()).edit()
-                        .putString(getString(R.string.settings_difficulty_select), newDiff).apply();
+                        .putString(getString(R.string.preferences_difficulty), newDiff).apply();
                 if (!newDiff.equalsIgnoreCase(currentDifficulty)) {
                     currentDifficulty = newDiff;
                     mListener.onChangeDifficulty();
                 }
             }
+        });
+        imageViewCloseSettings.setOnClickListener(v -> {
+            playSound(R.raw.click_settings);
+            mListener.onBackButtonSettings();
+        });
+        textViewReset.setOnClickListener(v -> {
+            playSound(R.raw.click_settings);
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
+            alertDialogBuilder.setTitle(R.string.alert_reset_game_title);
+            alertDialogBuilder.setMessage(R.string.alert_reset_game_text);
+            alertDialogBuilder.setPositiveButton(R.string.alert_reset_game_positive,
+                    (dialog, which) -> {
+                        playSound(R.raw.click_settings);
+                        mListener.onGameReset();
+            });
+            alertDialogBuilder.setNegativeButton(R.string.alert_reset_game_cancel, null);
+            alertDialogBuilder.setCancelable(false).show();
         });
     }
 
@@ -112,5 +164,13 @@ public class SettingsFragment extends Fragment {
     public interface ActionListener {
         void onBackButtonSettings();
         void onChangeDifficulty();
+        void onChangeUsername(String username);
+        void onGameReset();
+    }
+
+    private void playSound(int resID) {
+        MediaPlayer mp = MediaPlayer.create(getContext(), resID);
+        mp.start();
+        mp.setOnCompletionListener(MediaPlayer::release);
     }
 }

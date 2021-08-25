@@ -28,16 +28,18 @@ import java.util.Random;
 public class MainActivity extends AppCompatActivity implements SettingsFragment.ActionListener {
 
     final int START_LEVEL = 1;
+    final int START_SCORE = 0;
     final int OPERATION_BARRIER = 3;
     final int PROGRESS_FOR_LEVEL = 5;
 
-    private TextView levelView, scoreView, errorsView, timeView, numberOneView, numberTwoView,
-            operationView, textViewStartButton, textViewOnFail;
+    private TextView textViewLevel, correctsView, errorsView, timeView, numberOneView, numberTwoView;
+    private TextView operationView, textViewStartButton, textViewOnFail, textViewUsername;
+    private TextView textViewScorePlaceholder;
     private LinearLayout startButton;
     private LinearLayout taskLayout;
     private GridLayout answersGridLayout;
     private int mFirstNumRange, mSecondNumRange, mAnswersMax, numberOne, numberTwo, answerCellNumber;
-    private int corrects, errors, level, progress, correctAnswer, timeMillis;
+    private int corrects, wrongs, level, progress, correctAnswer, timeMillis, score;
     private int[] colors;
     private String username;
 
@@ -46,14 +48,13 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     private CountDownTimer timer;
     private Handler handler;
     private Runnable runnable;
-    private ImageView imageViewSettings;
-    private ImageView imageViewRefresh;
+    private ImageView imageViewSettings, imageViewRefresh, imageViewEditUsername;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Log.e("MainActivity", "onCreate");
+//        Log.e("MainActivity", "onCreate");
 
 //        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
@@ -63,8 +64,8 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         operationView = findViewById(R.id.operation);
         answersGridLayout = findViewById(R.id.gridView);
         textViewOnFail = findViewById(R.id.timeOutText);
-        levelView = findViewById(R.id.levelNumber);
-        scoreView = findViewById(R.id.scoreNumber);
+        textViewLevel = findViewById(R.id.levelNumber);
+        correctsView = findViewById(R.id.scoreNumber);
         errorsView = findViewById(R.id.errorsNumber);
         timeView = findViewById(R.id.timeNumber);
         startButton = findViewById(R.id.startButtonLayout);
@@ -72,6 +73,9 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         textViewStartButton = findViewById(R.id.textViewStartButton);
         imageViewSettings = findViewById(R.id.imageViewSettings);
         imageViewRefresh = findViewById(R.id.imageViewRefresh);
+        textViewUsername = findViewById(R.id.textViewUsername);
+        textViewScorePlaceholder = findViewById(R.id.textViewScorePlaceholder);
+        imageViewEditUsername = findViewById(R.id.imageViewEditUsername);
 
         progress = 0;
         operation = Operation.ADDITION;
@@ -81,9 +85,16 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
                 R.color.light_red, R.color.yellow_green, R.color.light_green
         };
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        username = prefs.getString(getString(R.string.preferences_username), getString(R.string.settings_radio_easy));
+        username = prefs.getString(getString(R.string.preferences_username), getString(R.string.preferences_username_default));
+        if (username.equals(getString(R.string.preferences_username_default))) {
+            username = getString(R.string.counter, "" + (100000 + new Random().nextInt(900000)));
+            prefs.edit().putString(getString(R.string.preferences_username), username).apply();
+        }
+        textViewUsername.setText(username);
+        score = prefs.getInt(getString(R.string.preferences_score), START_SCORE);
+        textViewScorePlaceholder.setText(String.valueOf(score));
         level = prefs.getInt(getString(R.string.preferences_level), START_LEVEL);
-        levelView.setText(String.valueOf(level));
+        textViewLevel.setText(String.valueOf(level));
         setAnswersGridLayout();
         answersGridLayout.setAlpha((float) 0.5);
         startButton.setOnClickListener(v -> {
@@ -115,6 +126,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
             }, 1000);
         });
         imageViewSettings.setOnClickListener(v -> {
+            playSound(R.raw.click_settings);
             SettingsFragment settings = (SettingsFragment) getSupportFragmentManager().findFragmentByTag(SettingsFragment.TAG);
             if (settings != null && settings.isVisible()) {
                 imageViewSettings.animate().rotation(0);
@@ -124,12 +136,20 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
                 initSettingsFragment();
             }
         });
+        imageViewEditUsername.setOnClickListener(v -> {
+            playSound(R.raw.click_settings);
+            initSettingsFragment();
+        });
     }
 
     private void setAnswersGridLayout() {
-        String difficulty = PreferenceManager.getDefaultSharedPreferences(this)
-                .getString(getString(R.string.settings_difficulty_select), getString(R.string.settings_radio_easy));
-        Log.e("DIFF", difficulty);
+        String difficulty = prefs.getString(getString(R.string.preferences_difficulty),
+                getString(R.string.preferences_difficulty_default));
+        if (difficulty.equals(getString(R.string.preferences_difficulty_default))) {
+            difficulty = getString(R.string.settings_radio_easy);
+            prefs.edit().putString(getString(R.string.preferences_difficulty), difficulty).apply();
+        }
+//        Log.e("DIFF", difficulty);
         int viewsCount;
         answersGridLayout.removeAllViews();
         if (difficulty.equals(getString(R.string.settings_radio_hard))) {
@@ -174,11 +194,15 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     private void setNewBoard() {
         setBoardColors();
         if (progress == PROGRESS_FOR_LEVEL) {
-            if (corrects > errors) {
+            if (corrects > wrongs) {
+                score = calculateScore();
                 this.level++;
+                textViewScorePlaceholder.setText(String.valueOf(score));
                 prefs.edit().putInt(getString(R.string.preferences_level), level).apply();
-                levelView.setText(String.valueOf(this.level));
-                bounceView(levelView);
+                prefs.edit().putInt(getString(R.string.preferences_score), score).apply();
+                textViewLevel.setText(String.valueOf(this.level));
+                bounceView(textViewLevel);
+                bounceView(textViewScorePlaceholder);
             }
             startTimer();
             resetScore();
@@ -282,6 +306,75 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         }
     }
 
+    private int calculateScore() {
+        int newScore = score;
+        String difficulty = prefs.getString(getString(R.string.preferences_difficulty),
+                getString(R.string.preferences_difficulty_default));
+        int answerDiff = corrects - wrongs;
+        int scoreToAdd = 0;
+        if (difficulty.equals(getString(R.string.settings_radio_easy))) {
+            switch (answerDiff) {
+                case 1:
+                    scoreToAdd = 1 + level;
+                    break;
+                case 2:
+                    scoreToAdd = 3 + level;
+                    break;
+                case 3:
+                    scoreToAdd = 6 + level;
+                    break;
+                case 4:
+                    scoreToAdd = 10 + level;
+                    break;
+                case 5:
+                    scoreToAdd = 15 + level;
+                    break;
+            }
+        }
+        if (difficulty.equals(getString(R.string.settings_radio_medium))) {
+            int levelAdd = level * 2;
+            switch (answerDiff) {
+                case 1:
+                    scoreToAdd = 2 + levelAdd;
+                    break;
+                case 2:
+                    scoreToAdd = 5 + levelAdd;
+                    break;
+                case 3:
+                    scoreToAdd = 9 + levelAdd;
+                    break;
+                case 4:
+                    scoreToAdd = 14 + levelAdd;
+                    break;
+                case 5:
+                    scoreToAdd = 20 + levelAdd;
+                    break;
+            }
+        }
+        if (difficulty.equals(getString(R.string.settings_radio_hard))) {
+            int levelAdd = level * 3;
+            switch (answerDiff) {
+                case 1:
+                    scoreToAdd = 3 + levelAdd;
+                    break;
+                case 2:
+                    scoreToAdd = 7 + levelAdd;
+                    break;
+                case 3:
+                    scoreToAdd = 12 + levelAdd;
+                    break;
+                case 4:
+                    scoreToAdd = 18 + levelAdd;
+                    break;
+                case 5:
+                    scoreToAdd = 25 + levelAdd;
+                    break;
+            }
+        }
+        Log.e("SCORE TO ADD", String.valueOf(scoreToAdd));
+        return newScore + scoreToAdd;
+    }
+
     private void correctAnswer() {
         playSound(R.raw.correct);
         progress++;
@@ -289,9 +382,9 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         if (progress == PROGRESS_FOR_LEVEL) {
             stopTimer();
         }
-        scoreView.setTextColor(getResources().getColor(R.color.dark_green));
-        scoreView.setText(String.valueOf(corrects));
-        bounceView(scoreView);
+        correctsView.setTextColor(getResources().getColor(R.color.dark_green));
+        correctsView.setText(String.valueOf(corrects));
+        bounceView(correctsView);
         disableGridListeners();
         runnable = () -> setNewBoard();
         handler.postDelayed(runnable, 1000);
@@ -299,12 +392,12 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
 
     private void wrongAnswer() {
         playSound(R.raw.wrong);
-        errors++;
+        wrongs++;
         TypedValue typedValue = new TypedValue();
         getTheme().resolveAttribute(R.attr.colorSecondary, typedValue, true);
         errorsView.setTextColor(getResources().getColor(typedValue.resourceId));
-        errorsView.setText(String.valueOf(errors));
-        if (errors >= PROGRESS_FOR_LEVEL) {
+        errorsView.setText(String.valueOf(wrongs));
+        if (wrongs >= PROGRESS_FOR_LEVEL) {
             disableGridListeners();
             taskLayout.setVisibility(View.INVISIBLE);
             Animation animFadeOut = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_out);
@@ -353,14 +446,14 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         TypedValue typedValue = new TypedValue();
         getTheme().resolveAttribute(R.attr.colorPrimaryVariant, typedValue, true);
         progress = 0;
-        if (corrects != 0 || errors != 0) {
+        if (corrects != 0 || wrongs != 0) {
             corrects = 0;
-            errors = 0;
-            scoreView.setTextColor(getResources().getColor(typedValue.resourceId));
-            scoreView.setText(String.valueOf(corrects));
-            bounceView(scoreView);
+            wrongs = 0;
+            correctsView.setTextColor(getResources().getColor(typedValue.resourceId));
+            correctsView.setText(String.valueOf(corrects));
+            bounceView(correctsView);
             errorsView.setTextColor(getResources().getColor(typedValue.resourceId));
-            errorsView.setText(String.valueOf(errors));
+            errorsView.setText(String.valueOf(wrongs));
             bounceView(errorsView);
         }
     }
@@ -457,6 +550,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     }
 
     private void initSettingsFragment() {
+        imageViewEditUsername.setOnClickListener(null);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
         transaction.replace(android.R.id.content, SettingsFragment.newInstance(), SettingsFragment.TAG);
@@ -468,6 +562,10 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
         transaction.remove(fragment).commit();
+        imageViewEditUsername.setOnClickListener(v -> {
+            playSound(R.raw.click_settings);
+            initSettingsFragment();
+        });
 //        setAnswersGridLayout();
     }
 
@@ -485,6 +583,26 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         stopTimer();
         resetScore();
         resetBoard();
+    }
+
+    @Override
+    public void onChangeUsername(String username) {
+        textViewUsername.setText(username);
+    }
+
+    @Override
+    public void onGameReset() {
+        level = START_LEVEL;
+        score = START_SCORE;
+        stopTimer();
+        resetScore();
+        resetBoard();
+        prefs.edit().putInt(getString(R.string.preferences_level), level).apply();
+        prefs.edit().putInt(getString(R.string.preferences_score), score).apply();
+        textViewScorePlaceholder.setText(String.valueOf(score));
+        textViewLevel.setText(String.valueOf(this.level));
+        bounceView(textViewLevel);
+        bounceView(textViewScorePlaceholder);
     }
 
 //    private Fragment getVisibleFragment() {
