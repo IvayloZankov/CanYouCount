@@ -293,7 +293,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
                         Drawable drawable = ContextCompat.getDrawable(getApplicationContext(), R.drawable.button_round);
                         if (drawable != null) {
                             TypedValue typedValue = new TypedValue();
-                            getTheme().resolveAttribute(R.attr.colorSecondary, typedValue, true);
+                            getTheme().resolveAttribute(com.google.android.material.R.attr.colorSecondary, typedValue, true);
                             drawable.setTint(getResources().getColor(typedValue.resourceId));
                             frame.setBackground(drawable);
                         }
@@ -394,7 +394,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         playSound(R.raw.wrong);
         wrongs++;
         TypedValue typedValue = new TypedValue();
-        getTheme().resolveAttribute(R.attr.colorSecondary, typedValue, true);
+        getTheme().resolveAttribute(com.google.android.material.R.attr.colorSecondary, typedValue, true);
         errorsView.setTextColor(getResources().getColor(typedValue.resourceId));
         errorsView.setText(String.valueOf(wrongs));
         if (wrongs >= PROGRESS_FOR_LEVEL) {
@@ -444,7 +444,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
 
     private void resetScore() {
         TypedValue typedValue = new TypedValue();
-        getTheme().resolveAttribute(R.attr.colorPrimaryVariant, typedValue, true);
+        getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimaryVariant, typedValue, true);
         progress = 0;
         if (corrects != 0 || wrongs != 0) {
             corrects = 0;
@@ -460,7 +460,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
 
     private void startTimer() {
         TypedValue typedValue = new TypedValue();
-        getTheme().resolveAttribute(R.attr.colorPrimaryVariant, typedValue, true);
+        getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimaryVariant, typedValue, true);
         timeView.setTextColor(getResources().getColor(typedValue.resourceId));
 
         timer =  new CountDownTimer(timeMillis, 1000){
@@ -523,7 +523,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
             timeView.setText(String.valueOf(remainingTime / 1000));
             timeView.clearAnimation();
             TypedValue typedValue = new TypedValue();
-            getTheme().resolveAttribute(R.attr.colorSecondary, typedValue, true);
+            getTheme().resolveAttribute(com.google.android.material.R.attr.colorSecondary, typedValue, true);
             timeView.setTextColor(getResources().getColor(typedValue.resourceId));
             bounceView(timeView);
         } else {
